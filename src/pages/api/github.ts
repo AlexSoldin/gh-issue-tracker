@@ -20,8 +20,8 @@ export default async function handler(
         auth: process.env.GITHUB_AUTH_TOKEN
     });
 
-    const organisation = "vercel";
-    const repo = "next.js";
+    const organisation = req.query.org;
+    const repo = req.query.repo;
 
     const issuesResponse = await octokit.request(`GET /repos/${organisation}/${repo}/issues`);
     const issuesList: Array<Issue> = [];

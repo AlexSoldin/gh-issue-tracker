@@ -3,13 +3,11 @@ import React, { useState } from 'react';
 import { Box, FormControl, FormLabel, Heading, StatLabel, StatNumber, Flex, Input, Stat, Text, Button, Table,
   Thead,
   Tbody,
-  Tfoot,
   Tr,
   Th,
   Td,
-  TableCaption,
   TableContainer, } from '@chakra-ui/react';
-import useSwr from 'swr';
+import useSWR from 'swr';
 
 type Issue = {
   id: number;
@@ -20,37 +18,27 @@ type Issue = {
 }
 
 type Data = {
-  Issues: Array<Issue>;
+  issues: Array<Issue>;
 }
 
-async function fetcher(...arg: any) {
-  const res = await fetch(...arg);
-  return res.json();
+function cleanText(value: string) {
+  if (value.length > 30){
+    return value.substring(0, 30) + '...';
+  } else {
+    return value;
+  }
 }
 
 export default function Home() {
   const [organisation, setOrganisation] = useState('vercel');
   const [repo, setRepo] = useState('next.js');
-  // const [data, setData] = useState<Array<Issue>>([{
-  //   id: 0,
-  //   url: '',
-  //   title: '',
-  //   description: '',
-  //   created_at: '',
-  // }]);
+  const [queryParams, setQueryParams] = useState('?org=vercel&repo=next.js');
 
-  const handleSubmit = async () => {
-    console.log(organisation);
-    console.log(repo);
-    const response = await fetch(`api/github/${organisation}/${repo}`);
-    const responseData = await response.json();
-    console.log(responseData);
-    // setData(responseData);
-  };
-
-  // const fetcher = (...args: any) => fetch(...args).then(res => res.json())
-  const { data, error } = useSwr(`api/github`, fetcher);
-  console.log(data);
+  const fetcher = (url: string, queryParams: string = '') => fetch(`${url}${queryParams}`).then((r) => r.json());
+  const { data, error } = useSWR<Data, Error>([`api/github${queryParams}`], fetcher);
+  // const { data, error } = useSWRInfinite<Data, Error>((index: number) => `https://api.github.com/repos/${organisation}/${repo}/issues?per_page=${6}&page=${
+  //   index + 1
+  // }`, fetcher);
 
 	return (
     <>
@@ -67,7 +55,7 @@ export default function Home() {
         <br/>
         <Flex justify="center">
           <Box w="400px" p={5} ml={2} mr={4} mb={3} borderWidth="1px" rounded="lg" >
-            <form onSubmit={handleSubmit}>
+            <form>
             {/* <form> */}
               <FormControl >
                 <FormLabel>Organisation</FormLabel>
@@ -77,7 +65,7 @@ export default function Home() {
                 <FormLabel>Repository</FormLabel>
                 <Input type="text" placeholder="next.js" onBlur={event => setRepo(event.currentTarget.value)}/>
               </FormControl>
-              <Button width="full" mt={4} type="submit">
+              <Button width="full" mt={4} onClick={() => {setQueryParams(`?org=${organisation}&repo=${repo}`);}}>
                 Submit
               </Button>
             </form>
@@ -88,35 +76,35 @@ export default function Home() {
                 <Text fontSize='xl'>Repository Issues</Text>
               </StatLabel>
               <StatNumber>
-                { data ? data.length : "Loading"}
+                { data ? data['issues'].length : "Loading"}
               </StatNumber>
             </Stat>
           </Box>
         </Flex>
         <Flex justify="center">
-          <TableContainer borderWidth="1px" rounded="lg">
+          { data ? 
+          <TableContainer w="1000px" borderWidth="1px" rounded="lg">
             <Table variant='simple'>
               <Thead>
                 <Tr>
                   <Th>Id</Th>
                   <Th>Title</Th>
-                  <Th>Description</Th>
                   <Th>Created at</Th>
                   <Th>URL</Th>
                 </Tr>
               </Thead>
               <Tbody>
-                <Tr>
-                  {/* {data.forEach((item: Issue) => {
-                    return (
-                      <Td key={item.url}>{ item.title }</Td>
-                      
-                    );
-                  })} */}
-                </Tr>
+                  {data['issues'].map((item: Issue) => (
+                    <Tr key={item.id}>
+                      <Td>{item.id}</Td>
+                      <Td>{cleanText(item.title)}</Td>
+                      <Td>{item.created_at}</Td>
+                      <Td><a href={item.url}>View</a></Td>
+                    </Tr>
+                  ))}
               </Tbody>
             </Table>
-          </TableContainer>
+          </TableContainer> : <h1>Loading...</h1> }
         </Flex>
       </Box>
     </>
