@@ -42,6 +42,10 @@ export default function Home() {
       }
   );
 
+  console.log(data);
+  console.log(status);
+  console.log(isLoading);
+
   const animationKeyframes = keyframes`
     0% { transform: scale(1) rotate(0); border-radius: 20%; }
     25% { transform: scale(2) rotate(0); border-radius: 20%; }
@@ -95,11 +99,13 @@ export default function Home() {
                 <Button width="full" mt={4} onClick={() => {setQueryParams(`${organisation}/${repo}`);}}>
                   Submit
                 </Button>
+                {data?.pages[0].message == 'Not Found' ? <Text>Please enter a valid organisation and repository</Text> : <Text></Text>}
+                
               </form>
             </Box>
           </Flex>
           <Flex justify="center">
-            { status === "success" && (
+            { (status === "success" && data.pages[0].length > 10) && (
               <InfiniteScroll
                 dataLength={data?.pages.length * 20}
                 next={fetchNextPage}
