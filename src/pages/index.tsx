@@ -99,7 +99,7 @@ export default function Home() {
                 <Button width="full" mt={4} onClick={() => {setQueryParams(`${organisation}/${repo}`);}}>
                   Submit
                 </Button>
-                {data?.pages[0].message == 'Not Found' ? <Text>Please enter a valid organisation and repository</Text> : <Text></Text>}
+                {data?.pages[0].message == 'Not Found' ? <Text mt={4} color='tomato'>Please enter a valid organisation and repository</Text> : <Text mt={4}></Text>}
                 
               </form>
             </Box>
