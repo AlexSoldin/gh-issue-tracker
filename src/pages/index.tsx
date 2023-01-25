@@ -1,25 +1,13 @@
 import Head from 'next/head'
 import React, { useState } from 'react';
-import { Box, FormControl, FormLabel, Heading, StatLabel, StatNumber, Flex, Input, Stat, Text, Button, Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer, } from '@chakra-ui/react';
-import useSWR from 'swr';
+import { Box, FormControl, FormLabel, Heading, StatLabel, Flex, Input, Stat, Text, Button, Table,
+  Thead, Tbody, Tr, Th, Td, TableContainer, Progress, Container, keyframes, } from '@chakra-ui/react';
+import { motion } from 'framer-motion';
+import { useInfiniteQuery } from "@tanstack/react-query";
+import InfiniteScroll from "react-infinite-scroll-component";
 
-type Issue = {
-  id: number;
-  url: string;
-  title: string;
-  description: string;
-  created_at: string;
-}
-
-type Data = {
-  issues: Array<Issue>;
-}
+// import useSWR from 'swr';
+// import useSWRInfinite from 'swr/infinite'
 
 function cleanText(value: string) {
   if (value.length > 30){
@@ -32,81 +20,160 @@ function cleanText(value: string) {
 export default function Home() {
   const [organisation, setOrganisation] = useState('vercel');
   const [repo, setRepo] = useState('next.js');
-  const [queryParams, setQueryParams] = useState('?org=vercel&repo=next.js');
+  const [queryParams, setQueryParams] = useState('vercel/next.js');
+  let pageNumber = 1;
 
-  const fetcher = (url: string, queryParams: string = '') => fetch(`${url}${queryParams}`).then((r) => r.json());
-  const { data, error } = useSWR<Data, Error>([`api/github${queryParams}`], fetcher);
-  // const { data, error } = useSWRInfinite<Data, Error>((index: number) => `https://api.github.com/repos/${organisation}/${repo}/issues?per_page=${6}&page=${
-  //   index + 1
-  // }`, fetcher);
+  // const fetcher = (url: string, queryParams: string = '') => fetch(`${url}${queryParams}`).then((r) => r.json());
+  // const { data, error } = useSWRInfinite<Data, Error>((index: number) => [`api/github${queryParams}&index=${index + 1
+  // }`], fetcher);
 
-	return (
-    <>
-      <Head>
-        <title>GitHub Issue Seeker</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+  const { data, status, fetchNextPage, hasNextPage } = useInfiniteQuery(
+    [queryParams],
+    async ({ pageParam = 1 }) =>
+      await fetch(
+        `https://api.github.com/repos/${queryParams}/issues?page=${pageParam}`
+      ).then((result) => result.json()),
+      {
+        getNextPageParam: (lastPage, allPages) => {
+          const nextPage = allPages.length + 1
+          pageNumber += 1;
+          return nextPage 
+        }
+      }
+  );
 
-      <Box mt={5}>
-        <Heading as="h1" textAlign="center" size="2xl" mb={5}>
-          Github Issue Seeker
-        </Heading>
-        <br/>
-        <Flex justify="center">
-          <Box w="400px" p={5} ml={2} mr={4} mb={3} borderWidth="1px" rounded="lg" >
-            <form>
-            {/* <form> */}
-              <FormControl >
-                <FormLabel>Organisation</FormLabel>
-                <Input type="text" placeholder="vercel" onBlur={event => setOrganisation(event.currentTarget.value)}/>
-              </FormControl>
-              <FormControl mt={2} >
-                <FormLabel>Repository</FormLabel>
-                <Input type="text" placeholder="next.js" onBlur={event => setRepo(event.currentTarget.value)}/>
-              </FormControl>
-              <Button width="full" mt={4} onClick={() => {setQueryParams(`?org=${organisation}&repo=${repo}`);}}>
-                Submit
-              </Button>
-            </form>
-          </Box>
-          <Box w="400px" p={5} ml={4} mr={4} mb={3} borderWidth="1px" rounded="lg" >
-            <Stat>
-              <StatLabel>
-                <Text fontSize='xl'>Repository Issues</Text>
-              </StatLabel>
-              <StatNumber>
-                { data ? data['issues'].length : "Loading"}
-              </StatNumber>
-            </Stat>
-          </Box>
-        </Flex>
-        <Flex justify="center">
-          { data ? 
-          <TableContainer w="1000px" borderWidth="1px" rounded="lg">
-            <Table variant='simple'>
-              <Thead>
-                <Tr>
-                  <Th>Id</Th>
-                  <Th>Title</Th>
-                  <Th>Created at</Th>
-                  <Th>URL</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                  {data['issues'].map((item: Issue) => (
-                    <Tr key={item.id}>
-                      <Td>{item.id}</Td>
-                      <Td>{cleanText(item.title)}</Td>
-                      <Td>{item.created_at}</Td>
-                      <Td><a href={item.url}>View</a></Td>
-                    </Tr>
-                  ))}
-              </Tbody>
-            </Table>
-          </TableContainer> : <h1>Loading...</h1> }
-        </Flex>
-      </Box>
-    </>
-  )
+  const animationKeyframes = keyframes`
+    0% { transform: scale(1) rotate(0); border-radius: 20%; }
+    25% { transform: scale(2) rotate(0); border-radius: 20%; }
+    50% { transform: scale(2) rotate(270deg); border-radius: 50%; }
+    75% { transform: scale(1) rotate(270deg); border-radius: 50%; }
+    100% { transform: scale(1) rotate(0); border-radius: 20%; }
+  `;
+
+  const animation = `${animationKeyframes} 2s ease-in-out infinite`;
+
+  if (data?.pages[0].message.substring(0,3) == 'API'){
+    return (
+      <>
+        <Head>
+          <title>GitHub Issue Seeker</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
+
+        <Box mt={5}>
+          <Heading as="h1" textAlign="center" size="2xl" mb={5}>
+            Github Issue Seeker
+          </Heading>
+          <br/>
+          <Flex justify="center">
+            <Box w="575px" p={5} ml={4} mr={4} mb={3} borderWidth="1px" rounded="lg" >
+                <Stat>
+                  <StatLabel>
+                    <Text fontSize='xl'>Oops!</Text>
+                  </StatLabel>
+                  <Text>It seems that you have exceeded the maximum number of API calls. Please try again later.</Text>
+                </Stat>
+            </Box>
+          </Flex>
+          <Container h="20vh" display="flex" alignItems="center" justifyContent="center">
+            <Box
+              as={motion.div}
+              animation={animation}
+              padding="2"
+              bgGradient="linear(to-l, #7928CA, #FF0080)"
+              width="12"
+              height="12"
+              display="flex"
+            />
+          </Container>
+        </Box>
+      </>
+    );
+  } else {
+    return (
+      <>
+        <Head>
+          <title>GitHub Issue Seeker</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
+
+        <Box mt={5}>
+          <Heading as="h1" textAlign="center" size="2xl" mb={5}>
+            Github Issue Seeker
+          </Heading>
+          <br/>
+          <Flex justify="center">
+            <Box w="575px" p={5} ml={4} mr={4} mb={3} borderWidth="1px" rounded="lg" >
+                <Stat>
+                  <StatLabel>
+                    <Text fontSize='xl'>Instructions</Text>
+                  </StatLabel>
+                  <Text>This app uses the GitHub API to search for issues within certain organisations and repositories.</Text>
+                  <br/>
+                  <Text>Please enter the organisation and repository you are searching for.</Text>
+                  <br/>
+                  <Text>The default values are <strong>vercel</strong> and <strong>next.js</strong></Text>
+                </Stat>
+            </Box>
+            <Box w="400px" p={5} ml={2} mr={4} mb={3} borderWidth="1px" rounded="lg" >
+              <form>
+                <FormControl >
+                  <FormLabel>Organisation</FormLabel>
+                  <Input type="text" placeholder="vercel" onBlur={event => setOrganisation(event.currentTarget.value)}/>
+                </FormControl>
+                <FormControl mt={2} >
+                  <FormLabel>Repository</FormLabel>
+                  <Input type="text" placeholder="next.js" onBlur={event => setRepo(event.currentTarget.value)}/>
+                </FormControl>
+                <Button width="full" mt={4} onClick={() => {setQueryParams(`${organisation}/${repo}`);}}>
+                  Submit
+                </Button>
+              </form>
+            </Box>
+          </Flex>
+          <Flex justify="center">
+            { status === "success" && (
+              <InfiniteScroll
+                dataLength={data?.pages.length * 20}
+                next={fetchNextPage}
+                hasMore={!!hasNextPage}
+                loader={<Progress mt={2} mb={2} size='md' isIndeterminate />}
+              >
+                <TableContainer w="1000px" borderWidth="1px" rounded="lg">
+                  <Table variant='simple'>
+                    <Thead>
+                      <Tr>
+                        <Th>Id</Th>
+                        <Th>Title</Th>
+                        <Th>Created at</Th>
+                        <Th>URL</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                        {
+                          data.pages.map((page) => (
+                            <>
+                              {page.map((item: any) => (
+                                <Tr key={item.id}>
+                                  <Td>{item.id}</Td>
+                                  <Td>{cleanText(item.title)}</Td>
+                                  <Td>{item.created_at}</Td>
+                                  <Td><a href={item.html_url}>View</a></Td>
+                                </Tr>
+                              ))}
+                            </>
+                          ))
+                        }
+                    </Tbody>
+                  </Table>
+                </TableContainer>
+              </InfiniteScroll>
+            )}
+          </Flex>
+        </Box>
+      </>
+    )
+  }
 }
