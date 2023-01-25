@@ -76,16 +76,19 @@ export default function Home() {
                   <br/>
                   <Text>Please enter the organisation and repository you are searching for.</Text>
                   <br/>
-                  <Text>The default values are <strong>vercel</strong> and <strong>next.js</strong></Text>
+                  <Text>Default Values<br/></Text>
+                  <Text as='samp'>Organisation: vercel<br/></Text>
+                  <Text as='samp'>Repository: next.js<br/></Text>
+                  <Text as='samp'>Sorting: creation date descending</Text>
                 </Stat>
             </Box>
             <Box w="400px" p={5} ml={2} mr={4} mb={3} borderWidth="1px" rounded="lg" >
               <form>
-                <FormControl >
+                <FormControl>
                   <FormLabel>Organisation</FormLabel>
                   <Input type="text" placeholder="vercel" onBlur={event => setOrganisation(event.currentTarget.value)}/>
                 </FormControl>
-                <FormControl mt={2} >
+                <FormControl mt={2}>
                   <FormLabel>Repository</FormLabel>
                   <Input type="text" placeholder="next.js" onBlur={event => setRepo(event.currentTarget.value)}/>
                 </FormControl>
@@ -109,7 +112,7 @@ export default function Home() {
                       <Tr>
                         <Th>Id</Th>
                         <Th>Title</Th>
-                        <Th>Created at</Th>
+                        <Th>Creation Date</Th>
                         <Th>URL</Th>
                       </Tr>
                     </Thead>
