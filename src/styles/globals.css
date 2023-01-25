@@ -24,6 +24,7 @@
     border-radius: inherit;
     animation: anime 2s ease-out infinite;
 }
+
 @-webkit-keyframes anime {
     50%,
     75% {

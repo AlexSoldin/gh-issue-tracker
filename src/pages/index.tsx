@@ -9,7 +9,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 // import useSWR from 'swr';
 // import useSWRInfinite from 'swr/infinite'
 
-function cleanText(value: string) {
+function reduceText(value: string) {
   if (value.length > 30){
     return value.substring(0, 30) + '...';
   } else {
@@ -27,7 +27,7 @@ export default function Home() {
   // const { data, error } = useSWRInfinite<Data, Error>((index: number) => [`api/github${queryParams}&index=${index + 1
   // }`], fetcher);
 
-  const { data, status, fetchNextPage, hasNextPage } = useInfiniteQuery(
+  const { data, status, isLoading, fetchNextPage, hasNextPage } = useInfiniteQuery(
     [queryParams],
     async ({ pageParam = 1 }) =>
       await fetch(
@@ -52,45 +52,7 @@ export default function Home() {
 
   const animation = `${animationKeyframes} 2s ease-in-out infinite`;
 
-  if (data?.pages[0].message.substring(0,3) == 'API'){
-    return (
-      <>
-        <Head>
-          <title>GitHub Issue Seeker</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <link rel="icon" href="/favicon.ico" />
-        </Head>
-
-        <Box mt={5}>
-          <Heading as="h1" textAlign="center" size="2xl" mb={5}>
-            Github Issue Seeker
-          </Heading>
-          <br/>
-          <Flex justify="center">
-            <Box w="575px" p={5} ml={4} mr={4} mb={3} borderWidth="1px" rounded="lg" >
-                <Stat>
-                  <StatLabel>
-                    <Text fontSize='xl'>Oops!</Text>
-                  </StatLabel>
-                  <Text>It seems that you have exceeded the maximum number of API calls. Please try again later.</Text>
-                </Stat>
-            </Box>
-          </Flex>
-          <Container h="20vh" display="flex" alignItems="center" justifyContent="center">
-            <Box
-              as={motion.div}
-              animation={animation}
-              padding="2"
-              bgGradient="linear(to-l, #7928CA, #FF0080)"
-              width="12"
-              height="12"
-              display="flex"
-            />
-          </Container>
-        </Box>
-      </>
-    );
-  } else {
+  if (data || isLoading==true){
     return (
       <>
         <Head>
@@ -158,7 +120,7 @@ export default function Home() {
                               {page.map((item: any) => (
                                 <Tr key={item.id}>
                                   <Td>{item.id}</Td>
-                                  <Td>{cleanText(item.title)}</Td>
+                                  <Td>{reduceText(item.title)}</Td>
                                   <Td>{item.created_at}</Td>
                                   <Td><a href={item.html_url}>View</a></Td>
                                 </Tr>
@@ -175,5 +137,43 @@ export default function Home() {
         </Box>
       </>
     )
+  } else {
+    return (
+      <>
+        <Head>
+          <title>GitHub Issue Seeker</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
+
+        <Box mt={5}>
+          <Heading as="h1" textAlign="center" size="2xl" mb={5}>
+            Github Issue Seeker
+          </Heading>
+          <br/>
+          <Flex justify="center">
+            <Box w="575px" p={5} ml={4} mr={4} mb={3} borderWidth="1px" rounded="lg" >
+                <Stat>
+                  <StatLabel>
+                    <Text fontSize='xl'>Oops!</Text>
+                  </StatLabel>
+                  <Text>It seems that you have exceeded the maximum number of API calls. Please try again later.</Text>
+                </Stat>
+            </Box>
+          </Flex>
+          <Container h="20vh" display="flex" alignItems="center" justifyContent="center">
+            <Box
+              as={motion.div}
+              animation={animation}
+              padding="2"
+              bgGradient="linear(to-l, #7928CA, #FF0080)"
+              width="12"
+              height="12"
+              display="flex"
+            />
+          </Container>
+        </Box>
+      </>
+    );
   }
 }
