@@ -1,7 +1,8 @@
 import Head from 'next/head'
 import React, { useState } from 'react';
-import { Box, FormControl, FormLabel, Heading, StatLabel, Flex, Input, Stat, Text, Button, Table,
-  Thead, Tbody, Tr, Th, Td, TableContainer, Progress, Container, keyframes, } from '@chakra-ui/react';
+import { Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon,Box, 
+  FormControl, FormLabel, Heading, StatLabel, Flex, Input, Stat, Text, Button, Progress, 
+  Container, keyframes, Spacer, } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { useInfiniteQuery } from "@tanstack/react-query";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -10,8 +11,8 @@ import InfiniteScroll from "react-infinite-scroll-component";
 // import useSWRInfinite from 'swr/infinite'
 
 function reduceText(value: string) {
-  if (value.length > 30){
-    return value.substring(0, 30) + '...';
+  if (value.length > 40){
+    return value.substring(0, 40) + '...';
   } else {
     return value;
   }
@@ -21,7 +22,6 @@ export default function Home() {
   const [organisation, setOrganisation] = useState('vercel');
   const [repo, setRepo] = useState('next.js');
   const [queryParams, setQueryParams] = useState('vercel/next.js');
-  let pageNumber = 1;
 
   // const fetcher = (url: string, queryParams: string = '') => fetch(`${url}${queryParams}`).then((r) => r.json());
   // const { data, error } = useSWRInfinite<Data, Error>((index: number) => [`api/github${queryParams}&index=${index + 1
@@ -35,16 +35,11 @@ export default function Home() {
       ).then((result) => result.json()),
       {
         getNextPageParam: (lastPage, allPages) => {
-          const nextPage = allPages.length + 1
-          pageNumber += 1;
+          const nextPage = allPages.length + 1;
           return nextPage 
         }
       }
   );
-
-  console.log(data);
-  console.log(status);
-  console.log(isLoading);
 
   const animationKeyframes = keyframes`
     0% { transform: scale(1) rotate(0); border-radius: 20%; }
@@ -76,14 +71,15 @@ export default function Home() {
                   <StatLabel>
                     <Text fontSize='xl'>Instructions</Text>
                   </StatLabel>
-                  <Text>This app uses the GitHub API to search for issues within certain organisations and repositories.</Text>
+                  <Text fontSize={'md'}>This app uses the GitHub API to search for issues within certain organisations and repositories.</Text>
                   <br/>
-                  <Text>Please enter the organisation and repository you are searching for.</Text>
+                  <Text fontSize={'md'}>Please enter the organisation and repository you are searching for.</Text>
+                  <Text fontSize={'md'}>Click on each row to expand the issue.</Text>
                   <br/>
-                  <Text>Default Values<br/></Text>
-                  <Text as='samp'>Organisation: vercel<br/></Text>
-                  <Text as='samp'>Repository: next.js<br/></Text>
-                  <Text as='samp'>Sorting: creation date descending</Text>
+                  <Text fontSize={'sm'}>Default Values<br/></Text>
+                  <Text fontSize={'sm'} as='samp'>Organisation: vercel<br/></Text>
+                  <Text fontSize={'sm'} as='samp'>Repository: next.js<br/></Text>
+                  <Text fontSize={'sm'} as='samp'>Sorting: creation date descending</Text>
                 </Stat>
             </Box>
             <Box w="400px" p={5} ml={2} mr={4} mb={3} borderWidth="1px" rounded="lg" >
@@ -92,7 +88,7 @@ export default function Home() {
                   <FormLabel>Organisation</FormLabel>
                   <Input type="text" placeholder="vercel" onBlur={event => setOrganisation(event.currentTarget.value)}/>
                 </FormControl>
-                <FormControl mt={2}>
+                <FormControl mt={4}>
                   <FormLabel>Repository</FormLabel>
                   <Input type="text" placeholder="next.js" onBlur={event => setRepo(event.currentTarget.value)}/>
                 </FormControl>
@@ -112,34 +108,38 @@ export default function Home() {
                 hasMore={!!hasNextPage}
                 loader={<Progress mt={2} mb={2} size='md' isIndeterminate />}
               >
-                <TableContainer w="1000px" borderWidth="1px" rounded="lg">
-                  <Table variant='simple'>
-                    <Thead>
-                      <Tr>
-                        <Th>Id</Th>
-                        <Th>Title</Th>
-                        <Th>Creation Date</Th>
-                        <Th>URL</Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                        {
+                <Accordion allowToggle w="1000px" borderWidth="1px" rounded="lg">
+                {
                           data.pages.map((page) => (
                             <>
                               {page.map((item: any) => (
-                                <Tr key={item.id}>
-                                  <Td>{item.id}</Td>
-                                  <Td>{reduceText(item.title)}</Td>
-                                  <Td>{item.created_at}</Td>
-                                  <Td><a href={item.html_url}>View</a></Td>
-                                </Tr>
+                                <AccordionItem key={item.id}>
+                                  <h2>
+                                    <AccordionButton _expanded={{ bg: '#E2E8F0', color: 'black' }}>
+                                      <Box as="span" flex='1' textAlign='left'>
+                                        {item.id} - {reduceText(item.title)}
+                                      </Box>
+                                      <Box as="span" flex='1' textAlign='right'>
+                                        {item.created_at.substring(0,10)} {item.created_at.substring(12,19)}
+                                      </Box>
+                                      <AccordionIcon />
+                                    </AccordionButton>
+                                  </h2>
+                                  <AccordionPanel pb={4}>
+                                    <Text fontSize={'lg'} as='b'>{item.title}</Text>
+                                    <Text>Created by: {item.user.login}</Text>
+                                    <Text>Created at: {item.created_at.substring(0,10)} {item.created_at.substring(12,19)}</Text>
+                                    <Text>Closed at: {item.closed_at == null ? 'N/A' : item.closed_at}</Text>
+                                    <Text fontSize={'sm'} mt={4}>{item.body}</Text>
+                                    <Button mt={4}><a href={item.html_url}>View on GitHub</a></Button>
+                                  </AccordionPanel>
+                                </AccordionItem>
                               ))}
                             </>
                           ))
                         }
-                    </Tbody>
-                  </Table>
-                </TableContainer>
+                </Accordion>
+
               </InfiniteScroll>
             )}
           </Flex>
