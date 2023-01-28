@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, FormControl, FormLabel, Input, Text, Button, } from '@chakra-ui/react';
 
-export default function GitHubInput({dataToChild, dataToParent}) {
+export default function GitHubInput({dataToChild, dataToParent}: {dataToChild:any, dataToParent:any}) {
   const [organisation, setOrganisation] = useState('vercel');
   const [repo, setRepo] = useState('next.js');
 
