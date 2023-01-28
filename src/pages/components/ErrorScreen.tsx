@@ -1,8 +1,7 @@
-import Head from 'next/head'
-import { Box, Container, Heading, Text, Flex, keyframes, } from '@chakra-ui/react';
+import { Box, Container, Text, Flex, keyframes, } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 
-export default function ErrorScreen() {
+export default function ErrorScreen({text}: {text: string}) {
     const animationKeyframes = keyframes`
     0% { transform: scale(1) rotate(0); border-radius: 20%; }
     25% { transform: scale(2) rotate(0); border-radius: 20%; }
@@ -16,14 +15,11 @@ export default function ErrorScreen() {
 	return (
 			<>
 					<Box mt={5}>
-					<Heading as="h1" textAlign="center" size="2xl" mb={5}>
-							Github Issue Seeker
-					</Heading>
 					<br/>
 					<Flex justify="center">
 							<Box w="575px" p={5} ml={4} mr={4} mb={3} borderWidth="1px" rounded="lg" >  
 							<Text fontSize='xl'>Oops!</Text>
-							<Text>It seems that you have exceeded the maximum number of API calls. Please try again later.</Text>
+							<Text>{text}</Text>
 							</Box>
 					</Flex>
 					<Container h="20vh" display="flex" alignItems="center" justifyContent="center">

@@ -36,12 +36,15 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
+      <Box mt={5}>
+        <Heading as="h1" textAlign="center" size="2xl" mb={5}>
+          Github Issue Seeker
+        </Heading>
+      </Box>
+      
       {
         (data || isLoading==true) ?
         <Box mt={5}>
-          <Heading as="h1" textAlign="center" size="2xl" mb={5}>
-            Github Issue Seeker
-          </Heading>
           <br/>
           <Flex justify="center">
             <Information/>
@@ -53,7 +56,7 @@ export default function Home() {
             )}
           </Flex>
         </Box> :
-        <ErrorScreen />
+        <ErrorScreen text={'It seems that you have exceeded the maximum number of API calls. Please try again later.'}/>
       }
     </>
   )
