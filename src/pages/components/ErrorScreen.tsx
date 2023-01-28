@@ -15,12 +15,6 @@ export default function ErrorScreen() {
 
 	return (
 			<>
-					<Head>
-					<title>GitHub Issue Seeker</title>
-					<meta name="viewport" content="width=device-width, initial-scale=1" />
-					<link rel="icon" href="/favicon.ico" />
-					</Head>
-
 					<Box mt={5}>
 					<Heading as="h1" textAlign="center" size="2xl" mb={5}>
 							Github Issue Seeker
