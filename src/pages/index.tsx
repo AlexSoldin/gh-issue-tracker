@@ -8,6 +8,7 @@ import Information from './components/Information';
 import GitHubInput from './components/GitHubInput';
 import ErrorScreen from './components/ErrorScreen';
 
+// reduce the length of text should it be too long for the accordian
 function reduceText(value: string) {
   if (value.length > 40){
     return value.substring(0, 40) + '...';
