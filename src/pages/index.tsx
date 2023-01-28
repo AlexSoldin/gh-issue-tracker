@@ -1,14 +1,12 @@
 import Head from 'next/head'
 import React, { useState } from 'react';
 import { Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon,Box, 
-  FormControl, FormLabel, Heading, StatLabel, Flex, Input, Stat, Text, Button, Progress, 
-  Container, keyframes, Spacer, } from '@chakra-ui/react';
-import { motion } from 'framer-motion';
+  Heading, Flex, Text, Button, Progress, } from '@chakra-ui/react';
 import { useInfiniteQuery } from "@tanstack/react-query";
 import InfiniteScroll from "react-infinite-scroll-component";
-
-// import useSWR from 'swr';
-// import useSWRInfinite from 'swr/infinite'
+import Information from './components/Information';
+import GitHubInput from './components/GitHubInput';
+import ErrorScreen from './components/ErrorScreen';
 
 function reduceText(value: string) {
   if (value.length > 40){
@@ -19,13 +17,11 @@ function reduceText(value: string) {
 }
 
 export default function Home() {
-  const [organisation, setOrganisation] = useState('vercel');
-  const [repo, setRepo] = useState('next.js');
   const [queryParams, setQueryParams] = useState('vercel/next.js');
 
-  // const fetcher = (url: string, queryParams: string = '') => fetch(`${url}${queryParams}`).then((r) => r.json());
-  // const { data, error } = useSWRInfinite<Data, Error>((index: number) => [`api/github${queryParams}&index=${index + 1
-  // }`], fetcher);
+  const dataToParent = (childData: string) => {
+    setQueryParams(childData);
+  }
 
   const { data, status, isLoading, fetchNextPage, hasNextPage } = useInfiniteQuery(
     [queryParams],
@@ -40,16 +36,6 @@ export default function Home() {
         }
       }
   );
-
-  const animationKeyframes = keyframes`
-    0% { transform: scale(1) rotate(0); border-radius: 20%; }
-    25% { transform: scale(2) rotate(0); border-radius: 20%; }
-    50% { transform: scale(2) rotate(270deg); border-radius: 50%; }
-    75% { transform: scale(1) rotate(270deg); border-radius: 50%; }
-    100% { transform: scale(1) rotate(0); border-radius: 20%; }
-  `;
-
-  const animation = `${animationKeyframes} 2s ease-in-out infinite`;
 
   if (data || isLoading==true){
     return (
@@ -66,40 +52,10 @@ export default function Home() {
           </Heading>
           <br/>
           <Flex justify="center">
-            <Box w="575px" p={5} ml={4} mr={4} mb={3} borderWidth="1px" rounded="lg" >
-                <Stat>
-                  <StatLabel>
-                    <Text fontSize='xl'>Instructions</Text>
-                  </StatLabel>
-                  <Text fontSize={'md'}>This app uses the GitHub API to search for issues within certain organisations and repositories.</Text>
-                  <br/>
-                  <Text fontSize={'md'}>Please enter the organisation and repository you are searching for.</Text>
-                  <Text fontSize={'md'}>Click on each row to expand the issue.</Text>
-                  <br/>
-                  <Text fontSize={'sm'}>Default Values<br/></Text>
-                  <Text fontSize={'sm'} as='samp'>Organisation: vercel<br/></Text>
-                  <Text fontSize={'sm'} as='samp'>Repository: next.js<br/></Text>
-                  <Text fontSize={'sm'} as='samp'>Sorting: creation date descending</Text>
-                </Stat>
-            </Box>
-            <Box w="400px" p={5} ml={2} mr={4} mb={3} borderWidth="1px" rounded="lg" >
-              <form>
-                <FormControl>
-                  <FormLabel>Organisation</FormLabel>
-                  <Input type="text" placeholder="vercel" onBlur={event => setOrganisation(event.currentTarget.value)}/>
-                </FormControl>
-                <FormControl mt={4}>
-                  <FormLabel>Repository</FormLabel>
-                  <Input type="text" placeholder="next.js" onBlur={event => setRepo(event.currentTarget.value)}/>
-                </FormControl>
-                <Button width="full" mt={4} onClick={() => {setQueryParams(`${organisation}/${repo}`);}}>
-                  Submit
-                </Button>
-                {data?.pages[0].message == 'Not Found' ? <Text mt={4} color='tomato'>Please enter a valid organisation and repository</Text> : <Text mt={4}></Text>}
-                
-              </form>
-            </Box>
+            <Information/>
+            <GitHubInput dataToChild={data} dataToParent={dataToParent}/>
           </Flex>
+
           <Flex justify="center">
             { (status === "success" && data.pages[0].length > 10) && (
               <InfiniteScroll
@@ -139,7 +95,6 @@ export default function Home() {
                           ))
                         }
                 </Accordion>
-
               </InfiniteScroll>
             )}
           </Flex>
@@ -147,42 +102,6 @@ export default function Home() {
       </>
     )
   } else {
-    return (
-      <>
-        <Head>
-          <title>GitHub Issue Seeker</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <link rel="icon" href="/favicon.ico" />
-        </Head>
-
-        <Box mt={5}>
-          <Heading as="h1" textAlign="center" size="2xl" mb={5}>
-            Github Issue Seeker
-          </Heading>
-          <br/>
-          <Flex justify="center">
-            <Box w="575px" p={5} ml={4} mr={4} mb={3} borderWidth="1px" rounded="lg" >
-                <Stat>
-                  <StatLabel>
-                    <Text fontSize='xl'>Oops!</Text>
-                  </StatLabel>
-                  <Text>It seems that you have exceeded the maximum number of API calls. Please try again later.</Text>
-                </Stat>
-            </Box>
-          </Flex>
-          <Container h="20vh" display="flex" alignItems="center" justifyContent="center">
-            <Box
-              as={motion.div}
-              animation={animation}
-              padding="2"
-              bgGradient="linear(to-l, #7928CA, #FF0080)"
-              width="12"
-              height="12"
-              display="flex"
-            />
-          </Container>
-        </Box>
-      </>
-    );
+    <ErrorScreen />
   }
 }
